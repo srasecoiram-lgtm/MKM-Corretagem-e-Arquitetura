@@ -1,0 +1,162 @@
+/* =========================================================
+   MKM — ANUNCIE
+   ========================================================= */
+
+.anuncie-layout {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-10);
+  flex-wrap: wrap;
+  padding: var(--sp-16) var(--sp-8);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.etapas-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.etapas-info h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: var(--mkm-dark);
+  margin-bottom: var(--sp-3);
+  line-height: 1.2;
+}
+
+.etapas-info > p {
+  color: var(--gray-500);
+  font-size: 0.97rem;
+  line-height: 1.7;
+  margin-bottom: var(--sp-8);
+  max-width: 480px;
+}
+
+.etapa-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--sp-4);
+}
+
+.etapa {
+  background: var(--mkm-white);
+  border-radius: var(--radius-md);
+  padding: var(--sp-6) var(--sp-4);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+  transition: var(--transition);
+  border-top: 3px solid transparent;
+}
+
+.etapa:hover {
+  border-top-color: var(--mkm-accent);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-3px);
+}
+
+.etapa span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--mkm-dark);
+  color: var(--mkm-accent);
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: var(--sp-3);
+  font-family: var(--font-display);
+}
+
+.etapa p {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+/* ── FORMULÁRIO ANUNCIE ── */
+.form-contato {
+  background: var(--mkm-white);
+  padding: var(--sp-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  border-top: 4px solid var(--mkm-accent);
+}
+
+.form-contato h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--mkm-dark);
+  margin-bottom: var(--sp-2);
+}
+
+.form-contato input {
+  padding: var(--sp-3) var(--sp-4);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.form-contato input:focus {
+  outline: none;
+  border-color: var(--mkm-accent);
+  background: var(--mkm-white);
+  box-shadow: 0 0 0 3px rgba(201,151,59,0.10);
+}
+
+.cep-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.cep-row input { width: auto; flex: 1; }
+
+.link-cep {
+  font-size: 0.82rem;
+  color: var(--mkm-accent);
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.link-cep:hover { opacity: 0.75; }
+
+.form-contato button[type="submit"] {
+  padding: var(--sp-4);
+  background: var(--mkm-dark);
+  color: var(--mkm-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: var(--sp-2);
+}
+
+.form-contato button[type="submit"]:hover {
+  background: var(--mkm-accent);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .anuncie-layout { padding: var(--sp-10) var(--sp-4); flex-direction: column; }
+  .form-contato { max-width: 100%; }
+}

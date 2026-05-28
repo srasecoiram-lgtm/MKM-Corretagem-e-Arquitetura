@@ -1,0 +1,233 @@
+/* =========================================================
+   MKM — FOOTER
+   ========================================================= */
+
+.footer {
+  background: var(--mkm-dark);
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: auto;
+}
+
+/* Linha dourada no topo */
+.footer-top-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--mkm-accent), transparent);
+}
+
+/* ── GRID INTERNO ── */
+.footer-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--sp-12) var(--sp-8) var(--sp-10);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.4fr;
+  gap: var(--sp-10);
+  align-items: start;
+}
+
+/* ── COLUNA MARCA ── */
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.footer-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.footer-logo-mkm {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mkm-accent);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.footer-logo-text {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.50);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footer-tagline {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 300px;
+  margin: 0;
+}
+
+/* ── REDES SOCIAIS ── */
+.footer-socials {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: var(--mkm-white);
+  transition: var(--transition);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.social-btn:hover { transform: translateY(-2px); }
+.social-btn--whatsapp:hover  { background: #25D366; border-color: #25D366; }
+.social-btn--instagram:hover { background: #E1306C; border-color: #E1306C; }
+.social-btn--facebook:hover  { background: #1877F2; border-color: #1877F2; }
+
+/* ── COLUNAS DE LINKS ── */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.footer-col-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--mkm-accent);
+  margin: 0;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li a {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.60);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  line-height: 1.5;
+}
+
+.footer-links li a:hover {
+  color: var(--mkm-white);
+}
+
+/* ── LISTA DE CONTATO ── */
+.footer-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.footer-contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.footer-contact-list li a {
+  color: rgba(255, 255, 255, 0.60);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-contact-list li a:hover { color: var(--mkm-white); }
+
+.contact-icon {
+  color: var(--mkm-accent);
+  font-size: 13px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* ── BADGES (CRECI / SUSEP / CNAI) ── */
+.footer-badges {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+}
+
+.footer-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(201, 151, 59, 0.40);
+  color: var(--mkm-accent);
+}
+
+/* ── RODAPÉ INFERIOR ── */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: var(--sp-5) var(--sp-8);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+  max-width: 100%;
+}
+
+.footer-bottom p { margin: 0; }
+
+.footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.footer-bottom-links a {
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-bottom-links a:hover { color: var(--mkm-white); }
+.footer-bottom-links span { color: rgba(255, 255, 255, 0.20); }
+
+/* ── RESPONSIVO ── */
+@media (max-width: 1024px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-8);
+  }
+  .footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    padding: var(--sp-8) var(--sp-4) var(--sp-6);
+    gap: var(--sp-6);
+  }
+  .footer-brand { grid-column: auto; }
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--sp-4);
+  }
+}

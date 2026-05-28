@@ -1,0 +1,231 @@
+/* =========================================================
+   MKM — SEARCHBAR / BANNER HERO
+   ========================================================= */
+
+.banner {
+  position: relative;
+  height: 72vh;
+  min-height: 520px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background-color: var(--mkm-dark);
+}
+
+/* Imagem de fundo */
+.banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/Mkmbackground.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* Gradiente escuro sobre a foto */
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(13,27,42,0.82) 0%,
+    rgba(13,27,42,0.60) 50%,
+    rgba(13,27,42,0.75) 100%
+  );
+  z-index: 1;
+}
+
+/* ── OVERLAY / CONTEÚDO ── */
+.banner-overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 860px;
+  padding: 0 var(--sp-6);
+  text-align: center;
+}
+
+.banner-overlay h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  color: var(--mkm-white);
+  line-height: 1.15;
+  margin-bottom: var(--sp-8);
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.35);
+}
+
+/* Linha dourada decorativa abaixo do título */
+.banner-overlay h1::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--mkm-accent);
+  margin: var(--sp-4) auto 0;
+  border-radius: 2px;
+}
+
+/* ── CAIXA DE BUSCA BRANCA ── */
+.search-wrapper {
+  background: var(--mkm-white);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6) var(--sp-8);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.28);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  border-top: 3px solid var(--mkm-accent);
+}
+
+/* ── ABAS COMPRAR / ALUGAR ── */
+.filtro-abas {
+  display: flex;
+  gap: var(--sp-2);
+  border-bottom: 1px solid var(--gray-200);
+  padding-bottom: var(--sp-3);
+}
+
+.tab {
+  padding: var(--sp-2) var(--sp-5);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s ease;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.tab:hover {
+  color: var(--mkm-dark);
+}
+
+.tab.ativo {
+  color: var(--mkm-dark);
+  border-bottom-color: var(--mkm-accent);
+  font-weight: 700;
+}
+
+/* ── SEÇÃO DE BUSCA ── */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* ── BARRA DE BUSCA ── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--gray-50);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-4);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: var(--mkm-accent);
+  box-shadow: 0 0 0 3px rgba(201,151,59,0.12);
+  background: var(--mkm-white);
+}
+
+.search-icon {
+  color: var(--mkm-accent);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--gray-800);
+  outline: none;
+  padding: var(--sp-2) 0;
+}
+
+.search-bar input::placeholder {
+  color: var(--gray-400);
+}
+
+/* ── BOTÕES DA SEARCH BAR ── */
+.btn-buscar {
+  background: var(--mkm-dark);
+  color: var(--mkm-white);
+  border: none;
+  padding: var(--sp-3) var(--sp-6);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-buscar:hover {
+  background: var(--mkm-accent);
+  transform: translateY(-1px);
+}
+
+.botao-toggle {
+  background: transparent;
+  color: var(--mkm-blue);
+  border: 1.5px solid var(--mkm-blue);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.botao-toggle:hover {
+  background: var(--mkm-blue);
+  color: var(--mkm-white);
+}
+
+/* ── RESPONSIVO ── */
+@media (max-width: 768px) {
+  .banner {
+    height: 80vh;
+    min-height: 480px;
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+
+  .banner-overlay h1 {
+    font-size: 2rem;
+    margin-bottom: var(--sp-6);
+  }
+
+  .search-wrapper {
+    padding: var(--sp-5) var(--sp-4);
+    border-radius: var(--radius-md);
+  }
+
+  .search-bar {
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+
+  .btn-buscar,
+  .botao-toggle {
+    flex: 1;
+  }
+}

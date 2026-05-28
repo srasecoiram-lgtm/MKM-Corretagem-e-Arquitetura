@@ -1,0 +1,118 @@
+# ========================
+# MKM Consultoria Imobiliária
+# .gitignore
+# ========================
+
+# === DEPENDÊNCIAS ===
+node_modules/
+/.pnp
+.pnp.js
+
+# === BUILDS ===
+/build
+/dist
+/.next
+/out
+
+# === VARIÁVEIS DE AMBIENTE (NUNCA COMMITAR!) ===
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.staging
+
+# === BANCO DE DADOS (CRÍTICO - NUNCA EXPOR!) ===
+# Arquivos de configuração do banco
+database.json
+db-config.js
+db-config.ts
+knexfile.js
+knexfile.ts
+prisma/.env
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+dump.sql
+backup.sql
+migrations/seeds/
+/data/
+
+# === CREDENCIAIS & CHAVES ===
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+secrets/
+credentials/
+config/secrets.js
+config/database.js
+jwt-secret.txt
+service-account.json
+
+# === LOGS ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+logs/
+*.log.*
+
+# === UPLOADS & MÍDIA LOCAL ===
+/uploads/
+/public/uploads/
+/server/uploads/
+*.local.jpg
+*.local.png
+
+# === SISTEMA OPERACIONAL ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V8
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === EDITORES & IDEs ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# === TESTES ===
+/coverage
+.nyc_output
+
+# === CACHE ===
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# === DOCKER (se usar) ===
+docker-compose.override.yml
+.dockerenv
+
+# === BACKUPS ===
+*.bak
+*.backup
+*.old
+
+# === TYPESCRIPT ===
+*.tsbuildinfo
+
+# === YARN ===
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz

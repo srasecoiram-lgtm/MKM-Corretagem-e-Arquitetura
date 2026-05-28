@@ -1,0 +1,182 @@
+/* =========================================================
+   MKM — FILTROS  (padrão Lopes: barra horizontal dentro
+   do card branco, logo abaixo da search bar)
+   ========================================================= */
+
+.filtros-painel {
+  border-top: 1px solid var(--gray-100);
+  padding: var(--sp-4) var(--sp-2) 0;
+  animation: f-in 0.15s ease;
+}
+
+@keyframes f-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Linha única horizontal */
+.filtros-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+/* ── BLOCO (label + controle) ── */
+.filtros-bloco {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.filtros-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── SEPARADOR VERTICAL ── */
+.filtros-vline {
+  width: 1px;
+  height: 26px;
+  background: var(--gray-200);
+  flex-shrink: 0;
+}
+
+/* ── INPUTS DE VALOR ── */
+.filtros-valor {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.filtros-input-box {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  background: var(--gray-50);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.filtros-input-box:focus-within {
+  border-color: var(--mkm-accent);
+  background: var(--mkm-white);
+  box-shadow: 0 0 0 2px rgba(201,151,59,0.10);
+}
+
+.filtros-cifra {
+  font-size: 0.73rem;
+  color: var(--gray-300);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.filtros-input-box input {
+  border: none;
+  background: transparent;
+  width: 80px;
+  font-size: 0.83rem;
+  color: var(--gray-800);
+  outline: none;
+  font-family: var(--font-body);
+}
+
+/* esconde setas do input number */
+.filtros-input-box input::-webkit-inner-spin-button,
+.filtros-input-box input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.filtros-input-box input[type=number] { -moz-appearance: textfield; }
+
+.filtros-dash {
+  font-size: 0.85rem;
+  color: var(--gray-300);
+  flex-shrink: 0;
+}
+
+/* ── CHIPS ── */
+.filtros-chips {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.f-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 28px;
+  padding: 0 var(--sp-2);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-full);
+  background: var(--mkm-white);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.f-chip:hover {
+  border-color: var(--mkm-dark);
+  color: var(--mkm-dark);
+}
+
+.f-chip--on {
+  background: var(--mkm-dark);
+  border-color: var(--mkm-dark);
+  color: var(--mkm-white);
+}
+
+.f-chip--on:hover {
+  background: var(--mkm-accent);
+  border-color: var(--mkm-accent);
+}
+
+.f-chip--txt {
+  min-width: unset;
+  padding: 0 var(--sp-3);
+}
+
+/* ── LIMPAR ── */
+.filtros-clear {
+  margin-left: auto;
+  height: 26px;
+  padding: 0 var(--sp-3);
+  background: transparent;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.filtros-clear:hover {
+  border-color: var(--gray-400);
+  color: var(--gray-700);
+}
+
+/* ── RESPONSIVO ── */
+@media (max-width: 700px) {
+  .filtros-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-4);
+  }
+  .filtros-vline { display: none; }
+  .filtros-valor { flex-wrap: wrap; }
+  .filtros-input-box input { width: 100%; }
+  .filtros-clear { margin-left: 0; width: 100%; justify-content: center; }
+}

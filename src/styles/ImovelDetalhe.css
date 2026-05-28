@@ -1,0 +1,104 @@
+/* =========================================================
+   MKM — DETALHE DO IMÓVEL
+   ========================================================= */
+
+.detalhes-container {
+  background: var(--gray-50);
+  min-height: 100vh;
+}
+
+.detalhes-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: var(--sp-8);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--sp-8);
+  align-items: start;
+}
+
+.imagem-principal {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.detalhes-info {
+  background: var(--mkm-white);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-8);
+  box-shadow: var(--shadow-card);
+  border-top: 4px solid var(--mkm-accent);
+  position: sticky;
+  top: calc(var(--header-h) + var(--sp-4));
+}
+
+.detalhes-info h1 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--mkm-dark);
+  margin-bottom: var(--sp-3);
+  line-height: 1.2;
+}
+
+.preco {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--mkm-accent);
+  margin-bottom: var(--sp-6);
+  font-family: var(--font-display);
+}
+
+.endereco,
+.metragem,
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  margin-bottom: var(--sp-3);
+}
+
+.detalhes-info h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mkm-dark);
+  margin: var(--sp-5) 0 var(--sp-3);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--gray-100);
+}
+
+.descricao {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--gray-600);
+  margin-bottom: var(--sp-6);
+}
+
+.voltar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  font-size: 0.88rem;
+  color: var(--mkm-blue);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  margin: 0 var(--sp-8) var(--sp-8);
+  display: block;
+}
+
+.voltar-btn:hover { color: var(--mkm-accent); }
+
+@media (max-width: 900px) {
+  .detalhes-wrapper {
+    grid-template-columns: 1fr;
+    padding: var(--sp-4);
+  }
+  .detalhes-info { position: static; }
+}

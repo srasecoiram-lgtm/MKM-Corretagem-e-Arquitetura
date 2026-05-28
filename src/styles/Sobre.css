@@ -1,0 +1,44 @@
+/* =========================================================
+   MKM — SOBRE
+   ========================================================= */
+
+.sobre-container {
+  padding: var(--sp-16) var(--sp-8);
+  background: var(--mkm-white);
+}
+
+.sobre-container:nth-of-type(even) {
+  background: var(--mkm-light);
+}
+
+.sobre-conteudo {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.sobre-conteudo h1,
+.sobre-conteudo h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--mkm-dark);
+  margin-bottom: var(--sp-6);
+  padding-left: var(--sp-4);
+  border-left: 4px solid var(--mkm-accent);
+}
+
+.sobre-conteudo p {
+  font-size: 1.02rem;
+  line-height: 1.8;
+  color: var(--gray-600);
+  margin-bottom: var(--sp-4);
+}
+
+.sobre-conteudo strong {
+  color: var(--mkm-dark);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .sobre-container { padding: var(--sp-10) var(--sp-4); }
+}
