@@ -1,185 +1,288 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import api          from "../services/api";
+import Header       from "../components/Header";
+import Footer       from "../components/Footer";
+import CardImovel   from "../components/ImovelCard";
+import { FaSearch, FaFilter, FaHome, FaBuilding,
+         FaTimes, FaSortAmountDown } from "react-icons/fa";
 import "../styles/ListarImoveis.css";
-import HeaderImoveis from "../components/Header";
-import CardImovel from "../components/ImovelCard";
-import Footer   from "../components/Footer";
 
-export default function ListaImoveis() {
-  const [imoveis, setImoveis] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [refreshCount, setRefreshCount] = useState(0);
-  const [permissionError, setPermissionError] = useState(false);
+/* ── ABAS DE TIPO ── */
+const TIPOS = [
+  { key: "todos",       label: "Todos",        icon: "🏘️" },
+  { key: "Apartamento", label: "Apartamentos", icon: "🏢" },
+  { key: "Casa",        label: "Casas",        icon: "🏠" },
+  { key: "Terreno",     label: "Terrenos",     icon: "🌿" },
+  { key: "Comercial",   label: "Comercial",    icon: "🏪" },
+];
 
+const ORDENAR = [
+  { key: "recente",    label: "Mais recentes"  },
+  { key: "menor",      label: "Menor preço"    },
+  { key: "maior",      label: "Maior preço"    },
+  { key: "area",       label: "Maior área"     },
+];
+
+export default function ListarImoveis() {
+  const [imoveis,     setImoveis]     = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
+
+  /* filtros */
+  const [tipo,        setTipo]        = useState("todos");
+  const [finalidade,  setFinalidade]  = useState("todos");
+  const [busca,       setBusca]       = useState("");
+  const [ordenar,     setOrdenar]     = useState("recente");
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [valorMin,    setValorMin]    = useState("");
+  const [valorMax,    setValorMax]    = useState("");
+
+  /* ── FETCH ── */
   const fetchImoveis = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      setPermissionError(false);
-
-      console.log("🔄 Iniciando busca de imóveis...");
-      
-      const response = await axios.get(
-        `http://localhost:3002/imoveis?refresh=${Date.now()}`,
-        {
-          headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          },
-          timeout: 10000,
-        }
-      );
-
-      console.log("✅ Resposta da API:", response.data);
-      
-      if (response.data && Array.isArray(response.data)) {
-        console.log(`📊 ${response.data.length} imóveis encontrados`);
-        setImoveis(response.data);
-        localStorage.setItem("cached_imoveis", JSON.stringify(response.data));
-      } else {
-        console.warn("⚠️ Resposta não é um array:", response.data);
-        setImoveis([]);
-      }
+      const res = await api.get("/imoveis");
+      setImoveis(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("❌ Erro ao buscar imóveis:", err);
-      
-      if (err.response && err.response.status === 500) {
-        const errorMsg = err.response.data?.message || err.message;
-        if (
-          errorMsg.includes("permission") ||
-          errorMsg.includes("SELECT") ||
-          errorMsg.includes("acesso negado") ||
-          errorMsg.includes("access denied")
-        ) {
-          setPermissionError(true);
-          setError(
-            "Erro de permissão: O usuário do banco de dados não tem permissão SELECT"
-          );
-        } else {
-          setError(`Erro no servidor: ${errorMsg}`);
-        }
-      } else if (err.code === "ECONNREFUSED") {
-        setError("Erro de conexão: O servidor não está respondendo");
-      } else if (err.message.includes("Network Error")) {
-        setError("Erro de rede: Verifique sua conexão e se o servidor está rodando");
-      } else {
-        setError(`Erro: ${err.message}`);
-      }
+      setError("Não foi possível carregar os imóveis. Verifique o servidor.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    console.log("🎯 Componente ListaImoveis montado");
-    fetchImoveis();
+  useEffect(() => { fetchImoveis(); }, [fetchImoveis]);
 
-    const handleImovelCadastrado = () => {
-      console.log("🔄 Evento de imovelCadastrado recebido");
-      setTimeout(() => {
-        setRefreshCount((prev) => prev + 1);
-      }, 1000);
-    };
+  /* ── FILTROS + ORDENAÇÃO (client-side) ── */
+  const filtrados = useMemo(() => {
+    let lista = [...imoveis];
 
-    const handleStorageChange = (e) => {
-      if (e.key === "ultimoImovelCadastrado") {
-        console.log("🔄 Storage alterado, atualizando lista");
-        setRefreshCount((prev) => prev + 1);
-      }
-    };
+    /* tipo */
+    if (tipo !== "todos")
+      lista = lista.filter(i => i.tipo_imovel === tipo);
 
-    window.addEventListener("imovelCadastrado", handleImovelCadastrado);
-    window.addEventListener("storage", handleStorageChange);
+    /* finalidade */
+    if (finalidade !== "todos")
+      lista = lista.filter(i =>
+        i.finalidade?.toLowerCase().includes(finalidade.toLowerCase()));
 
-    return () => {
-      window.removeEventListener("imovelCadastrado", handleImovelCadastrado);
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [fetchImoveis, refreshCount]);
+    /* busca por texto */
+    if (busca.trim()) {
+      const q = busca.trim().toLowerCase();
+      lista = lista.filter(i =>
+        [i.edificio, i.tipo_imovel, i.bairro, i.cidade, i.logradouro]
+          .some(v => v?.toLowerCase().includes(q))
+      );
+    }
 
-  const handleRefresh = () => {
-    console.log("🔄 Refresh manual solicitado");
-    setRefreshCount((prev) => prev + 1);
+    /* valor mínimo */
+    if (valorMin)
+      lista = lista.filter(i => parseFloat(i.valor || 0) >= parseFloat(valorMin));
+
+    /* valor máximo */
+    if (valorMax)
+      lista = lista.filter(i => parseFloat(i.valor || 0) <= parseFloat(valorMax));
+
+    /* ordenação */
+    switch (ordenar) {
+      case "menor": lista.sort((a,b) => (a.valor||0) - (b.valor||0)); break;
+      case "maior": lista.sort((a,b) => (b.valor||0) - (a.valor||0)); break;
+      case "area":  lista.sort((a,b) => (b.area_total||0) - (a.area_total||0)); break;
+      default:      lista.sort((a,b) => new Date(b.criado_em) - new Date(a.criado_em));
+    }
+
+    return lista;
+  }, [imoveis, tipo, finalidade, busca, valorMin, valorMax, ordenar]);
+
+  /* contagem por tipo para os badges */
+  const contagemTipo = useMemo(() => {
+    const c = {};
+    imoveis.forEach(i => {
+      c[i.tipo_imovel] = (c[i.tipo_imovel] || 0) + 1;
+    });
+    c.todos = imoveis.length;
+    return c;
+  }, [imoveis]);
+
+  const limparFiltros = () => {
+    setTipo("todos"); setFinalidade("todos");
+    setBusca(""); setOrdenar("recente");
+    setValorMin(""); setValorMax("");
   };
 
-  // Debug: verificar o que está sendo renderizado
-  console.log("🎨 Renderizando ListaImoveis:", {
-    loading,
-    error,
-    permissionError,
-    quantidadeImoveis: imoveis.length,
-    imoveis: imoveis.slice(0, 3) // Mostrar apenas os primeiros 3 para debug
-  });
+  const temFiltroAtivo = tipo !== "todos" || finalidade !== "todos" ||
+    busca || valorMin || valorMax;
 
+  /* ── RENDER ── */
   return (
-    <div className="listar-imoveis">
-      <HeaderImoveis />
+    <div className="li-page">
+      <Header />
 
-      <div className="page-header-potencial">
-        <div className="header-content">
-          <h1 className="titulo-pagina-potencial">Imóveis disponíveis</h1>
-          <p className="subtitulo-pagina">
-            Confira a lista de imóveis cadastrados e encontre sua melhor
-            oportunidade.
-          </p>
+      {/* ══ HERO ══ */}
+      <div className="li-hero">
+        <div className="li-hero__inner">
+          <h1>Imóveis Disponíveis</h1>
+          <p>Encontre o imóvel ideal em Praia Grande e região</p>
+
+          {/* BARRA DE BUSCA PRINCIPAL */}
+          <div className="li-search">
+            <FaSearch className="li-search__icon" />
+            <input
+              type="text"
+              placeholder="Busque por bairro, empreendimento ou cidade…"
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+            />
+            {busca && (
+              <button className="li-search__clear" onClick={() => setBusca("")}>
+                <FaTimes />
+              </button>
+            )}
+          </div>
         </div>
-        <button 
-          onClick={handleRefresh} 
-          className="btn-refresh" 
-          disabled={loading}
-          title="Atualizar lista de imóveis"
-        >
-          {loading ? "⏳" : "🔄"} Atualizar
-        </button>
       </div>
 
-      {loading ? (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Carregando imóveis...</p>
-          <p style={{fontSize: '12px', color: '#666'}}>
-            Verificando servidor em http://localhost:3002
-          </p>
+      {/* ══ ABAS DE TIPO ══ */}
+      <div className="li-tabs-wrap">
+        <div className="li-tabs">
+          {TIPOS.map(t => (
+            <button
+              key={t.key}
+              type="button"
+              className={`li-tab ${tipo === t.key ? "li-tab--on" : ""}`}
+              onClick={() => setTipo(t.key)}
+            >
+              <span className="li-tab__icon">{t.icon}</span>
+              <span className="li-tab__label">{t.label}</span>
+              <span className="li-tab__count">
+                {contagemTipo[t.key === "todos" ? "todos" : t.key] || 0}
+              </span>
+            </button>
+          ))}
         </div>
-      ) : permissionError ? (
-        <div className="permission-error">
-          <div className="error-icon">🚫</div>
-          <h3>Erro de Permissão no Banco de Dados</h3>
-          <p>O usuário do banco de dados não tem permissão para visualizar os imóveis.</p>
-        </div>
-      ) : error ? (
-        <div className="error-message">
-          <p>❌ {error}</p>
-          <div style={{marginTop: '10px'}}>
-          </div>
-        </div>
-      ) : imoveis.length === 0 ? (
-        <div className="empty-state">
-          <p>📭 Nenhum imóvel cadastrado</p>
-          <p style={{color: '#666', fontSize: '14px'}}>
-            O servidor retornou uma lista vazia
-          </p>
-          <Link to="/cadastrar-imovel" className="btn-cadastrar">
-            ➕ Cadastrar Primeiro Imóvel
-          </Link>
-        </div>
-      ) : (
-        <>
-          <div className="stats-bar">
-            <span>Total: {imoveis.length} imóvel{imoveis.length !== 1 ? "s" : ""}</span>
-            <span>Última atualização: {new Date().toLocaleTimeString()}</span>
+
+        {/* CONTROLES DIREITA */}
+        <div className="li-controls">
+
+          {/* FINALIDADE */}
+          <div className="li-pills">
+            {["todos","Venda","Aluguel"].map(f => (
+              <button
+                key={f}
+                type="button"
+                className={`li-pill ${finalidade === f ? "li-pill--on" : ""}`}
+                onClick={() => setFinalidade(f)}
+              >
+                {f === "todos" ? "Todos" : f}
+              </button>
+            ))}
           </div>
 
-          <div className="imovel-grid">
-            {imoveis.map((imovel) => {
-              console.log("🎯 Renderizando card para imóvel:", imovel.id, imovel.edificio);
-              return <CardImovel key={imovel.id} imovel={imovel} />;
-            })}
+          {/* ORDENAR */}
+          <div className="li-select-wrap">
+            <FaSortAmountDown />
+            <select value={ordenar} onChange={e => setOrdenar(e.target.value)}>
+              {ORDENAR.map(o => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </select>
           </div>
-        </>
+
+          {/* FILTROS AVANÇADOS */}
+          <button
+            type="button"
+            className={`li-btn-filter ${mostrarFiltros ? "li-btn-filter--on" : ""}`}
+            onClick={() => setMostrarFiltros(p => !p)}
+          >
+            <FaFilter />
+            Filtros
+            {temFiltroAtivo && <span className="li-filter-dot" />}
+          </button>
+        </div>
+      </div>
+
+      {/* ══ FILTROS AVANÇADOS ══ */}
+      {mostrarFiltros && (
+        <div className="li-advanced">
+          <div className="li-advanced__inner">
+            <div className="li-advanced__grupo">
+              <label>Valor mínimo</label>
+              <div className="li-advanced__input">
+                <span>R$</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={valorMin}
+                  onChange={e => setValorMin(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="li-advanced__grupo">
+              <label>Valor máximo</label>
+              <div className="li-advanced__input">
+                <span>R$</span>
+                <input
+                  type="number"
+                  placeholder="Sem limite"
+                  value={valorMax}
+                  onChange={e => setValorMax(e.target.value)}
+                />
+              </div>
+            </div>
+            {temFiltroAtivo && (
+              <button type="button" className="li-clear-btn" onClick={limparFiltros}>
+                <FaTimes /> Limpar filtros
+              </button>
+            )}
+          </div>
+        </div>
       )}
+
+      {/* ══ BARRA DE RESULTADOS ══ */}
+      <div className="li-results-bar">
+        <span>
+          {loading ? "Carregando…" : (
+            <>
+              <strong>{filtrados.length}</strong>
+              {filtrados.length === 1 ? " imóvel encontrado" : " imóveis encontrados"}
+              {temFiltroAtivo && (
+                <button className="li-clear-inline" onClick={limparFiltros}>
+                  Limpar filtros
+                </button>
+              )}
+            </>
+          )}
+        </span>
+      </div>
+
+      {/* ══ CONTEÚDO ══ */}
+      <div className="li-content">
+        {loading ? (
+          <div className="li-state">
+            <div className="li-spinner" />
+            <p>Carregando imóveis…</p>
+          </div>
+        ) : error ? (
+          <div className="li-state li-state--error">
+            <FaBuilding />
+            <p>{error}</p>
+            <button className="li-retry" onClick={fetchImoveis}>Tentar novamente</button>
+          </div>
+        ) : filtrados.length === 0 ? (
+          <div className="li-state">
+            <FaHome />
+            <p>Nenhum imóvel encontrado com esses filtros.</p>
+            <button className="li-retry" onClick={limparFiltros}>Limpar filtros</button>
+          </div>
+        ) : (
+          <div className="li-grid">
+            {filtrados.map(imovel => (
+              <CardImovel key={imovel.id} imovel={imovel} />
+            ))}
+          </div>
+        )}
+      </div>
+
       <Footer />
     </div>
   );

@@ -214,3 +214,92 @@
   .row { flex-direction: column; }
   .row > * { min-width: 100%; }
 }
+
+/* ── ALERTAS ── */
+.cad-alert {
+  margin: 0 var(--sp-8) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.cad-alert--error   { background:#FDEDEC; color:#C0392B; border-left:3px solid #C0392B; }
+.cad-alert--success { background:#EAFAF1; color:#2D6A4F; border-left:3px solid #2D6A4F; }
+
+/* ── REQUIRED ── */
+.cad-required { color: #C0392B; margin-left: 3px; }
+
+/* ── PREVIEW ── */
+.cad-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  align-items: flex-start;
+}
+.cad-preview img {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--gray-200);
+  object-fit: cover;
+}
+.cad-remove-img {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: #FDEDEC;
+  color: #C0392B;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: var(--font-body);
+}
+.cad-remove-img:hover { background: #C0392B; color: #fff; }
+
+/* ── UPLOAD AREA ── */
+.cad-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  align-items: flex-start;
+}
+.cad-upload-hint {
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  margin: 0;
+}
+
+/* ── BOTÃO SUBMIT ── */
+.cad-submit {
+  display: block;
+  width: calc(100% - var(--sp-8) * 2);
+  margin: 0 var(--sp-8) var(--sp-8);
+  padding: var(--sp-4);
+  background: var(--mkm-dark);
+  color: var(--mkm-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+.cad-submit:hover:not(:disabled) {
+  background: var(--mkm-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(201,151,59,0.30);
+}
+.cad-submit:disabled {
+  background: var(--gray-300);
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .cad-alert  { margin: 0 var(--sp-4) var(--sp-4); }
+  .cad-submit { width: calc(100% - var(--sp-4) * 2); margin: 0 var(--sp-4) var(--sp-6); }
+}
