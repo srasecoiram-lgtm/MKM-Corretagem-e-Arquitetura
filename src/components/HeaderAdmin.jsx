@@ -1,32 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaHeadset, FaUserCircle, FaSignOutAlt, FaHome, FaPlusCircle } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaBuilding, FaClipboardList, FaHome, FaPen, FaNewspaper, FaFileAlt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import "../styles/Header.css";
 
 export default function HeaderAdmin() {
   const [showDropdown, setShowDropdown] = useState(false);
-  const userRef      = useRef(null);
-  const location     = useLocation();
-  const navigate     = useNavigate();
+  const userRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   useEffect(() => {
-    function handleClickOutside(e) {
+    function handleOut(e) {
       if (userRef.current && !userRef.current.contains(e.target)) {
         setShowDropdown(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleOut);
+    return () => document.removeEventListener("mousedown", handleOut);
   }, []);
 
-  const isActive = (path) => location.pathname === path ? "ativo" : "";
+  const isActive = (path) => (location.pathname === path ? "ativo" : "");
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
+
+  const firstName = (user?.nome || "").split(" ")[0];
 
   return (
     <header className="header header--admin">
@@ -35,52 +37,64 @@ export default function HeaderAdmin() {
         {/* LOGO */}
         <div className="logo">
           <Link to="/admin/dashboard" className="logo-text">
-            <span className="highlight">MKM</span>
-            Admin
+            <span className="highlight">MKM</span> Admin
           </Link>
         </div>
 
-        {/* NAV CENTRAL */}
+        {/* NAV */}
         <nav className="nav-links">
           <Link to="/admin/dashboard" className={isActive("/admin/dashboard")}>
-            <FaHome style={{ marginRight: 5 }} />
-            Dashboard
+            <FaHome style={{ marginRight: 6 }} />
+            Painel
           </Link>
-          <Link to="/imoveis" className={isActive("/imoveis")}>Imóveis</Link>
+
           <Link to="/cadastrar" className={isActive("/cadastrar")}>
-            <FaPlusCircle style={{ marginRight: 5 }} />
+            <FaBuilding style={{ marginRight: 6 }} />
             Cadastrar
+          </Link>
+
+          <Link to="/imoveis" className={isActive("/imoveis")}>
+            <FaClipboardList style={{ marginRight: 6 }} />
+            Imóveis
+          </Link>
+
+          <Link to="/admin/posts" className={isActive("/admin/posts")}>
+            <FaFileAlt style={{ marginRight: 6 }} />
+            Posts
           </Link>
         </nav>
 
-        {/* ÍCONES DIREITA */}
+        {/* PERFIL / DROPDOWN */}
         <div className="icon-links">
-          <Link to="/contato" className="icon-with-text">
-            <FaHeadset className="icon" />
-            <span>Suporte</span>
-          </Link>
-
-          {/* DROPDOWN USUÁRIO */}
           <div className="user-dropdown-wrapper" ref={userRef}>
-            <FaUserCircle
-              className="icon user-icon"
-              onClick={() => setShowDropdown((p) => !p)}
-            />
+            <button
+              type="button"
+              className="user-dropdown-trigger"
+              onClick={() => setShowDropdown((prev) => !prev)}
+            >
+              {firstName && <span className="user-dropdown-label">{firstName}</span>}
+              <span className="user-golden-icon" aria-hidden="true">
+                <FaUserCircle />
+              </span>
+            </button>
+
             {showDropdown && (
               <div className="user-dropdown">
                 {user && (
-                  <p className="dropdown-username">
-                    {user.nome || user.email}
-                  </p>
+                  <p className="dropdown-username">{user.nome || user.email}</p>
                 )}
-                <Link to="/admin/dashboard" className="dropdown-link">
-                  Painel Admin
+
+                <Link to="/cadastrar" className="dropdown-link">
+                  Cadastrar imóvel
                 </Link>
-                <button
-                  className="dropdown-logout"
-                  onClick={handleLogout}
-                >
-                  <FaSignOutAlt />
+
+                <Link to="/admin/dashboard" className="dropdown-link">
+                  Painel admin
+                </Link>
+
+                <div className="dropdown-divider" />
+
+                <button className="dropdown-logout" onClick={handleLogout}>
                   Sair
                 </button>
               </div>

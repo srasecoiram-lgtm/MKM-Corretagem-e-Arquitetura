@@ -3,18 +3,18 @@
    ========================================================= */
 
 .pagina-cadastro {
-  background: var(--gray-100);
+  background: #F3F4F6;
   min-height: 100vh;
-  padding: var(--sp-8) var(--sp-4);
-  padding-top: calc(var(--header-h) + var(--sp-8));
+  padding: calc(var(--header-h) + var(--sp-8)) var(--sp-4) var(--sp-10);
 }
 
 .form-container-novo {
-  max-width: 860px;
+  max-width: 1000px;
   margin: 0 auto;
-  background: var(--mkm-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(13,27,42,0.10);
+  border: 1px solid #E5E7EB;
   overflow: hidden;
 }
 
@@ -121,33 +121,82 @@
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .file-label:hover {
   background: var(--mkm-accent);
+  transform: translateY(-1px);
 }
 
 .file-input { display: none; }
 
-.image-preview {
-  margin-top: var(--sp-4);
-  text-align: center;
+/* PREVIEW CENTRALIZADO E MAIOR */
+.cad-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-4) 0;
 }
 
-.image-preview img {
+.cad-preview img {
   max-width: 100%;
-  max-height: 280px;
+  max-height: 320px;
   border-radius: var(--radius-md);
   border: 2px solid var(--gray-200);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  object-fit: cover;
 }
 
-.image-preview p {
-  margin-top: var(--sp-2);
+.cad-remove-img {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: #FDEDEC;
+  color: #C0392B;
+  border: none;
+  border-radius: var(--radius-sm);
   font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  font-family: var(--font-body);
+}
+
+.cad-remove-img:hover {
+  background: #C0392B;
+  color: #fff;
+}
+
+.cad-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  align-items: flex-start;
+  padding: var(--sp-4);
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+}
+
+.cad-upload-area:hover {
+  border-color: var(--mkm-accent);
+  background: #fff;
+}
+
+.cad-upload-hint {
+  font-size: 0.78rem;
   color: var(--gray-400);
-  font-style: italic;
+  margin: 0;
+}
+
+.loading-placeholder {
+  text-align: center;
+  color: var(--gray-500);
+  margin-top: 120px;
+  font-size: 0.95rem;
 }
 
 /* ── BOTÃO SUBMIT ── */

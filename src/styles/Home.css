@@ -2,7 +2,7 @@
    MKM — HOME PAGE
    ========================================================= */
 
-/* ── SEÇÃO DE IMÓVEIS RECENTES ── */
+/* HERO / BANNER */
 .ultimos-imoveis-section {
   padding: var(--sp-16) var(--sp-8);
   background: var(--mkm-white);
@@ -18,12 +18,11 @@
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 700;
   color: var(--mkm-dark);
-  margin-bottom: var(--sp-2);
+  margin: 0 0 var(--sp-3);
 }
 
-/* Linha dourada abaixo do título de seção */
 .section-header h2::after {
-  content: '';
+  content: "";
   display: block;
   width: 48px;
   height: 3px;
@@ -35,19 +34,19 @@
 .section-header p {
   font-size: 1rem;
   color: var(--gray-500);
-  margin-top: var(--sp-3);
+  margin: var(--sp-3) 0 0;
 }
 
-/* ── GRID DE CARDS ── */
+/* GRID DE CARDS */
 .imoveis-grid-home {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--sp-6);
   max-width: var(--max-width);
   margin: 0 auto;
 }
 
-/* ── ESTADOS: LOADING / ERRO / VAZIO ── */
+/* ESTADOS */
 .loading-container,
 .error-container,
 .empty-container {
@@ -60,10 +59,21 @@
   text-align: center;
 }
 
-.error-container { color: var(--danger); }
-.empty-container  { color: var(--gray-400); font-size: 0.95rem; }
+.error-container {
+  color: var(--danger);
+  background: linear-gradient(180deg, #fff6f6, #fff);
+  border-radius: var(--radius-lg);
+  border: 1px solid #f5c6cb;
+}
 
-/* ── RESPONSIVO ── */
+.empty-container {
+  color: var(--gray-500);
+  background: linear-gradient(180deg, #f8f9fa, #fff);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--gray-300);
+}
+
+/* RESPONSIVO */
 @media (max-width: 768px) {
   .ultimos-imoveis-section {
     padding: var(--sp-10) var(--sp-4);

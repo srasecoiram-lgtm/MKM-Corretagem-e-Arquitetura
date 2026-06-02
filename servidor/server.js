@@ -291,24 +291,65 @@ app.post("/auth/logout", (req, res) => {
 // GET /imoveis — listar (público)
 app.get("/imoveis", async (req, res) => {
   try {
-    const { tipo, finalidade, cidade, q } = req.query;
+    const {
+      tipo,
+      finalidade,
+      status,
+      cidade,
+      q,
+      metragemMin,
+      metragemMax,
+      precoMin,
+      precoMax,
+    } = req.query;
+
     let sql    = "SELECT * FROM imoveis WHERE ativo = 1";
     const vals = [];
 
-    if (tipo)       { sql += " AND tipo_imovel = ?"; vals.push(tipo); }
-    if (finalidade) { sql += " AND finalidade = ?";  vals.push(finalidade); }
-    if (cidade)     { sql += " AND cidade LIKE ?";   vals.push(`%${cidade}%`); }
-    if (q)          {
-      sql += " AND (edificio LIKE ? OR bairro LIKE ? OR cidade LIKE ? OR tipo_imovel LIKE ?)";
+    if (tipo) {
+      sql += " AND tipo_imovel = ?";
+      vals.push(tipo);
+    }
+    if (finalidade) {
+      sql += " AND finalidade = ?";
+      vals.push(finalidade);
+    }
+    if (status) {
+      sql += " AND tipo_contrato = ?";
+      vals.push(status);
+    }
+    if (cidade) {
+      sql += " AND cidade LIKE ?";
+      vals.push(`%${cidade}%`);
+    }
+    if (q) {
+      sql +=
+        " AND (edificio LIKE ? OR bairro LIKE ? OR cidade LIKE ? OR tipo_imovel LIKE ? OR descricao LIKE ?)";
       const like = `%${q}%`;
-      vals.push(like, like, like, like);
+      vals.push(like, like, like, like, like);
+    }
+    if (metragemMin) {
+      sql += " AND area_total >= ?";
+      vals.push(Number(metragemMin));
+    }
+    if (metragemMax) {
+      sql += " AND area_total <= ?";
+      vals.push(Number(metragemMax));
+    }
+    if (precoMin) {
+      sql += " AND valor >= ?";
+      vals.push(Number(precoMin));
+    }
+    if (precoMax) {
+      sql += " AND valor <= ?";
+      vals.push(Number(precoMax));
     }
 
     sql += " ORDER BY criado_em DESC";
     const [rows] = await pool.query(sql, vals);
     res.json(rows);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao buscar imóveis:", err);
     res.status(500).json({ erro: "Erro ao buscar imóveis." });
   }
 });
@@ -354,24 +395,151 @@ app.post("/imoveis", authMiddleware, upload.single("imagem"), async (req, res) =
   }
 });
 
+// POST /imoveis — cadastrar (protegido)
+app.post(
+  "/imoveis",
+  authMiddleware,
+  upload.single("imagem"),
+  async (req, res) => {
+    try {
+      const d = req.body;
+      if (!d.cep || !d.uf || !d.cidade)
+        return res
+          .status(400)
+          .json({ erro: "CEP, UF e Cidade são obrigatórios." });
+
+      const parseNumber = (value) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      };
+
+      const imagem = req.file ? `/uploads/imoveis/${req.file.filename}` : null;
+      const tipoContrato = d.tipo_contrato
+        ? String(d.tipo_contrato).trim()
+        : null;
+
+      const [result] = await pool.query(
+        `INSERT INTO imoveis
+        (cep,uf,cidade,bairro,logradouro,numero,complemento,tipo_imovel,finalidade,
+         edificio,responsavel,captador,tipo_contrato,valor,data_contrato,
+         frente,largura,profundidade,area_total,quartos,banheiros,vagas,
+         descricao,link_maps,imagem)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [
+          String(d.cep).trim(),
+          String(d.uf).trim(),
+          String(d.cidade).trim(),
+          d.bairro ? String(d.bairro).trim() : null,
+          d.logradouro ? String(d.logradouro).trim() : null,
+          d.numero ? String(d.numero).trim() : null,
+          d.complemento ? String(d.complemento).trim() : null,
+          d.tipo_imovel ? String(d.tipo_imovel).trim() : null,
+          d.finalidade ? String(d.finalidade).trim() : null,
+          d.edificio ? String(d.edificio).trim() : null,
+          d.responsavel ? String(d.responsavel).trim() : null,
+          d.captador ? String(d.captador).trim() : null,
+          tipoContrato,
+          d.valor !== undefined && d.valor !== ""
+            ? parseNumber(d.valor)
+            : null,
+          d.data_contrato || null,
+          parseNumber(d.frente),
+          parseNumber(d.largura),
+          parseNumber(d.profundidade),
+          parseNumber(d.area_total),
+          d.quartos !== undefined && d.quartos !== ""
+            ? parseInt(d.quartos, 10) || null
+            : null,
+          d.banheiros !== undefined && d.banheiros !== ""
+            ? parseInt(d.banheiros, 10) || null
+            : null,
+          d.vagas !== undefined && d.vagas !== ""
+            ? parseInt(d.vagas, 10) || null
+            : null,
+          d.descricao ? String(d.descricao).trim() : null,
+          d.link_maps ? String(d.link_maps).trim() : null,
+          imagem,
+        ]
+      );
+      res.status(201).json({
+        success: true,
+        id: result.insertId,
+        imagem,
+      });
+    } catch (err) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      console.error("Erro ao cadastrar imóvel:", err);
+      res
+        .status(500)
+        .json({ erro: "Erro ao cadastrar imóvel. Tente novamente." });
+    }
+  }
+);
+
 // PUT /imoveis/:id (protegido)
 app.put("/imoveis/:id", authMiddleware, upload.single("imagem"), async (req, res) => {
   try {
     const d = req.body;
-    let sql  = `UPDATE imoveis SET
+    const parseNumber = (value) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const imagem = req.file
+      ? `/uploads/imoveis/${req.file.filename}`
+      : undefined;
+
+    const tipoContrato = d.tipo_contrato
+      ? String(d.tipo_contrato).trim()
+      : undefined;
+
+    let sql = `UPDATE imoveis SET
       cep=?,uf=?,cidade=?,bairro=?,logradouro=?,numero=?,complemento=?,
       tipo_imovel=?,finalidade=?,edificio=?,responsavel=?,captador=?,
-      tipo_contrato=?,valor=?,data_contrato=?,frente=?,largura=?,
+      tipo_contrato=?,valor,data_contrato=?,frente=?,largura=?,
       profundidade=?,area_total=?,quartos=?,banheiros=?,vagas=?,
       descricao=?,link_maps=?`;
-    const vals = [d.cep,d.uf,d.cidade,d.bairro||null,d.logradouro||null,
-      d.numero||null,d.complemento||null,d.tipo_imovel||null,d.finalidade||null,
-      d.edificio||null,d.responsavel||null,d.captador||null,d.tipo_contrato||null,
-      d.valor||null,d.data_contrato||null,d.frente||null,d.largura||null,
-      d.profundidade||null,d.area_total||null,d.quartos||null,d.banheiros||null,
-      d.vagas||null,d.descricao||null,d.link_maps||null];
 
-    if (req.file) { sql += ",imagem=?"; vals.push(`/uploads/imoveis/${req.file.filename}`); }
+    const vals = [
+      String(d.cep).trim(),
+      String(d.uf).trim(),
+      String(d.cidade).trim(),
+      d.bairro ? String(d.bairro).trim() : null,
+      d.logradouro ? String(d.logradouro).trim() : null,
+      d.numero ? String(d.numero).trim() : null,
+      d.complemento ? String(d.complemento).trim() : null,
+      d.tipo_imovel ? String(d.tipo_imovel).trim() : null,
+      d.finalidade ? String(d.finalidade).trim() : null,
+      d.edificio ? String(d.edificio).trim() : null,
+      d.responsavel ? String(d.responsavel).trim() : null,
+      d.captador ? String(d.captador).trim() : null,
+      tipoContrato,
+      d.valor !== undefined && d.valor !== ""
+        ? parseNumber(d.valor)
+        : null,
+      d.data_contrato || null,
+      parseNumber(d.frente),
+      parseNumber(d.largura),
+      parseNumber(d.profundidade),
+      parseNumber(d.area_total),
+      d.quartos !== undefined && d.quartos !== ""
+        ? parseInt(d.quartos, 10) || null
+        : null,
+      d.banheiros !== undefined && d.banheiros !== ""
+        ? parseInt(d.banheiros, 10) || null
+        : null,
+      d.vagas !== undefined && d.vagas !== ""
+        ? parseInt(d.vagas, 10) || null
+        : null,
+      d.descricao ? String(d.descricao).trim() : null,
+      d.link_maps ? String(d.link_maps).trim() : null,
+    ];
+
+    if (imagem) {
+      sql += ",imagem=?";
+      vals.push(imagem);
+    }
+
     sql += " WHERE id=?";
     vals.push(req.params.id);
 
@@ -379,8 +547,10 @@ app.put("/imoveis/:id", authMiddleware, upload.single("imagem"), async (req, res
     res.json({ success: true });
   } catch (err) {
     if (req.file) fs.unlinkSync(req.file.path);
-    console.error(err);
-    res.status(500).json({ erro: "Erro ao atualizar imóvel." });
+    console.error("Erro ao atualizar imóvel:", err);
+    res
+      .status(500)
+      .json({ erro: "Erro ao atualizar imóvel. Tente novamente." });
   }
 });
 

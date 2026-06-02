@@ -23,7 +23,10 @@
 }
 
 .header--scrolled { box-shadow: 0 4px 28px rgba(0,0,0,0.40); }
-.header--admin    { border-bottom-color: rgba(201,151,59,0.15); }
+.header--admin    { 
+  border-bottom-color: rgba(201,151,59,0.15);
+  --header-h: 72px; 
+}
 
 /* ── CONTAINER ── */
 .header-container {
@@ -293,13 +296,11 @@
 .user-dropdown a:hover,
 .dropdown-link:hover { color: var(--mkm-accent); }
 
-.dropdown-username {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--mkm-dark);
-  padding-bottom: var(--sp-2);
-  border-bottom: 1px solid var(--gray-100);
-  margin-bottom: var(--sp-2);
+.user-dropdown-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--mkm-accent);
+  letter-spacing: 0.02em;
 }
 
 .dropdown-logout {

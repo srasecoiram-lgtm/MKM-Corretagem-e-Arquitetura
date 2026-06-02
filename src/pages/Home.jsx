@@ -1,40 +1,37 @@
-// Home.jsx
 import React, { useState, useEffect } from "react";
-import Header from "../components/Header";
+import Header     from "../components/Header";
 import BannerBusca from "../components/SearchBar";
-import ImovelCard from "../components/ImovelCard";
-import SobreTexto from "../components/SobreTexto";
-import Footer  from "../components/Footer";
+import ImovelCard  from "../components/ImovelCard";
+import SobreTexto  from "../components/SobreTexto";
+import Footer      from "../components/Footer";
+import api         from "../services/api";
 import "../styles/Home.css";
-import axios from "axios";
 
 export default function Home() {
   const [ultimosImoveis, setUltimosImoveis] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error,   setError]   = useState(null);
 
   useEffect(() => {
-    const fetchUltimosImoveis = async () => {
+    const fetchUltimos = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:3002/imoveis");
-        
-        // Ordenar por data de criação e pegar os 3 mais recentes
-        const imoveisOrdenados = response.data.sort((a, b) => 
-          new Date(b.created_at) - new Date(a.created_at)
+        const { data } = await api.get("/imoveis");
+
+        const ordenados = [...data].sort(
+          (a, b) => new Date(b.criado_em) - new Date(a.criado_em)
         );
-        
-        const ultimosTres = imoveisOrdenados.slice(0, 3);
-        setUltimosImoveis(ultimosTres);
+
+        setUltimosImoveis(ordenados.slice(0, 3));
       } catch (err) {
         console.error("Erro ao buscar últimos imóveis:", err);
-        setError("Não foi possível carregar os imóveis recentes");
+        setError("Não foi possível carregar os imóveis recentes.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUltimosImoveis();
+    fetchUltimos();
   }, []);
 
   return (
@@ -42,7 +39,7 @@ export default function Home() {
       <Header />
       <BannerBusca />
 
-      {/* Seção de últimos imóveis */}
+      {/* ── ÚLTIMOS IMÓVEIS ── */}
       <section className="ultimos-imoveis-section">
         <div className="section-header">
           <h2>Últimos Imóveis Cadastrados</h2>
@@ -51,7 +48,7 @@ export default function Home() {
 
         {loading ? (
           <div className="loading-container">
-            <div className="spinner"></div>
+            <div className="spinner" />
             <p>Carregando imóveis...</p>
           </div>
         ) : error ? (
@@ -60,7 +57,7 @@ export default function Home() {
           </div>
         ) : ultimosImoveis.length === 0 ? (
           <div className="empty-container">
-            <p>Nenhum imóvel cadastrado ainda</p>
+            <p>Nenhum imóvel cadastrado ainda.</p>
           </div>
         ) : (
           <div className="imoveis-grid-home">
@@ -71,7 +68,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* Sessão 'Quem Somos' abaixo dos cards */}
       <SobreTexto />
       <Footer />
     </div>
