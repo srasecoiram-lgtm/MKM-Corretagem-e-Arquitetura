@@ -1,5 +1,6 @@
+import { whatsappUrl } from "../services/contato";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import {
   FaWhatsapp, FaInstagram, FaFacebookF,
   FaMapMarkerAlt, FaPhoneAlt, FaEnvelope,
@@ -29,7 +30,7 @@ export default function Footer() {
 
           <div className="footer-socials">
             <a
-              href="https://wa.me/5511992931055"
+              href={whatsappUrl()}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"

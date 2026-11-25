@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router";
 import { useAuth } from "../context/AuthContext.jsx";
 
 /**
@@ -15,7 +15,7 @@ import { useAuth } from "../context/AuthContext.jsx";
  * Com role obrigatório:
  *   <PrivateRoute requiredRole="admin"><CadastrarImovel /></PrivateRoute>
  */
-export default function PrivateRoute({ children, requiredRole = null }) {
+export default function PrivateRoute({ children, requiredRole = "admin" }) {
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
 
@@ -65,7 +65,7 @@ export default function PrivateRoute({ children, requiredRole = null }) {
 
   /* Role insuficiente → página 403 */
   if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/403" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

@@ -3,7 +3,7 @@ import {
   FaMapMarkerAlt, FaRegBuilding, FaClipboardCheck,
   FaRulerCombined, FaUpload, FaTrash,
 } from "react-icons/fa";
-import api from "../services/api";
+import api, { mediaUrl } from "../services/api";
 import "../styles/CadastrarImoveis.css";
 import "../styles/AdminForm.css";
 
@@ -30,9 +30,7 @@ export default function AdminForm({ initialData, imovelId, onSuccess, onCancel }
 
   const [formData, setFormData]   = useState(initialData || emptyForm);
   const [imagem, setImagem]       = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(initialData?.imagem
-    ? `${process.env.REACT_APP_API_URL || "http://localhost:3002"}${initialData.imagem}`
-    : "");
+  const [previewUrl, setPreviewUrl] = useState(mediaUrl(initialData?.imagem));
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState(null);
 

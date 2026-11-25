@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useParams } from "react-router";
 import {
   FaMapMarkerAlt,
   FaRegBuilding,
@@ -11,7 +11,7 @@ import {
   FaSave,
 } from "react-icons/fa";
 import HeaderAdmin from "../components/HeaderAdmin";
-import api from "../services/api";
+import api, { mediaUrl } from "../services/api";
 import "../styles/EditarImoveis.css";
 
 const FORM_INICIAL = {
@@ -55,11 +55,11 @@ export default function EditarImoveis() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [removerImagem, setRemoverImagem] = useState(false);
 
-  const carregar = async () => {
+  const carregar = useCallback(async (signal) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get(`/imoveis/${id}`);
+      const { data } = await api.get(`/imoveis/admin/${id}`, { signal });
       if (!data?.id) throw new Error("Não encontrado");
 
       setFormData({
@@ -89,22 +89,23 @@ export default function EditarImoveis() {
         link_maps: data.link_maps || "",
       });
 
-      if (data.imagem) {
-        setPreviewUrl(
-          `${process.env.REACT_APP_API_URL || "http://localhost:3002"}${data.imagem}`
-        );
-      }
+      setPreviewUrl(mediaUrl(data.imagem));
+      setImagem(null);
+      setRemoverImagem(false);
     } catch (err) {
+      if (signal.aborted) return;
       console.error("Erro ao carregar imóvel:", err);
       setError("Não foi possível carregar os dados do imóvel.");
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    carregar();
-  }, []);
+    const controller = new AbortController();
+    carregar(controller.signal);
+    return () => controller.abort();
+  }, [carregar]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

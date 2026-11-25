@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import {
   FaEye,
   FaEdit,
@@ -16,8 +16,7 @@ import {
   FaClipboardList,
 } from "react-icons/fa";
 import HeaderAdmin from "../components/HeaderAdmin";
-import { useAuth } from "../context/AuthContext";
-import api from "../services/api";
+import api, { mediaUrl } from "../services/api";
 import "../styles/AdminDashboard.css";
 
 /* ── HELPERS ── */
@@ -38,7 +37,6 @@ function useAdminAcessos() {
 }
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
   const acessos = useAdminAcessos();
   const location = useLocation();
 
@@ -56,18 +54,11 @@ export default function AdminDashboard() {
     else setCurrentTab("painel");
   }, [location.pathname]);
 
-  /* Relógio */
-  const [hora, setHora] = useState(new Date());
-  useEffect(() => {
-    const t = setInterval(() => setHora(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
   /* Dados do backend */
   const fetchDados = useCallback(async () => {
     setLoading(true);
     try {
-      const [resImoveis] = await Promise.all([api.get("/imoveis")]);
+      const resImoveis = await api.get("/imoveis/admin");
 
       const lista = resImoveis.data || [];
       setImoveis(lista);
@@ -310,9 +301,7 @@ export default function AdminDashboard() {
                                   {im.imagem ? (
                                     <img
                                       src={
-                                        (process.env.REACT_APP_API_URL ||
-                                          "http://localhost:3002") +
-                                        im.imagem
+                                        mediaUrl(im.imagem)
                                       }
                                       alt={im.edificio || im.tipo_imovel}
                                       className="adm-table__thumb"
@@ -430,7 +419,7 @@ export default function AdminDashboard() {
                                 <div className="adm-table__imovel">
                                   {im.imagem ? (
                                     <img
-                                      src={process.env.REACT_APP_API_URL || "http://localhost:3002" + im.imagem}
+                                      src={mediaUrl(im.imagem)}
                                       alt={im.edificio || im.tipo_imovel}
                                       className="adm-table__thumb"
                                     />

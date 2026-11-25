@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import "../styles/Filtros.css";
 
-export default function FiltrosImovel({ modo = "comprar", onFiltrar, mostrarMais }) {
+export default function FiltrosImovel({ onFiltrar, mostrarMais }) {
   const [filtros, setFiltros] = useState({
     valorMin: "", valorMax: "",
     dormitorios: [], vagas: [],
-    mobiliado: false, aceitaPet: false,
   });
 
   const set = (campo, valor) => {
@@ -26,8 +25,7 @@ export default function FiltrosImovel({ modo = "comprar", onFiltrar, mostrarMais
     const clean = {
       valorMin: "", valorMax: "",
       dormitorios: [], vagas: [],
-      mobiliado: false, aceitaPet: false,
-    };
+      };
     setFiltros(clean);
     onFiltrar?.(clean);
   };
@@ -43,14 +41,14 @@ export default function FiltrosImovel({ modo = "comprar", onFiltrar, mostrarMais
           <div className="filtros-valor">
             <div className="filtros-input-box">
               <span className="filtros-cifra">R$</span>
-              <input type="number" placeholder="Mínimo"
+              <input type="number" min="0" step="0.01" aria-label="Valor mínimo" placeholder="Mínimo"
                 value={filtros.valorMin}
                 onChange={(e) => set("valorMin", e.target.value)} />
             </div>
             <span className="filtros-dash">—</span>
             <div className="filtros-input-box">
               <span className="filtros-cifra">R$</span>
-              <input type="number" placeholder="Máximo"
+              <input type="number" min="0" step="0.01" aria-label="Valor máximo" placeholder="Máximo"
                 value={filtros.valorMax}
                 onChange={(e) => set("valorMax", e.target.value)} />
             </div>
@@ -65,7 +63,7 @@ export default function FiltrosImovel({ modo = "comprar", onFiltrar, mostrarMais
             {[1, 2, 3, "4+"].map((n) => (
               <button key={n} type="button"
                 className={`f-chip ${filtros.dormitorios.includes(n) ? "f-chip--on" : ""}`}
-                onClick={() => toggle("dormitorios", n)}>{n}</button>
+                aria-pressed={filtros.dormitorios.includes(n)} onClick={() => toggle("dormitorios", n)}>{n}</button>
             ))}
           </div>
         </div>
@@ -78,27 +76,10 @@ export default function FiltrosImovel({ modo = "comprar", onFiltrar, mostrarMais
             {[1, 2, 3, "4+"].map((n) => (
               <button key={n} type="button"
                 className={`f-chip ${filtros.vagas.includes(n) ? "f-chip--on" : ""}`}
-                onClick={() => toggle("vagas", n)}>{n}</button>
+                aria-pressed={filtros.vagas.includes(n)} onClick={() => toggle("vagas", n)}>{n}</button>
             ))}
           </div>
         </div>
-
-        {modo === "alugar" && (
-          <>
-            <div className="filtros-vline" />
-            <div className="filtros-bloco">
-              <span className="filtros-label">Extras</span>
-              <div className="filtros-chips">
-                <button type="button"
-                  className={`f-chip f-chip--txt ${filtros.mobiliado ? "f-chip--on" : ""}`}
-                  onClick={() => set("mobiliado", !filtros.mobiliado)}>Mobiliado</button>
-                <button type="button"
-                  className={`f-chip f-chip--txt ${filtros.aceitaPet ? "f-chip--on" : ""}`}
-                  onClick={() => set("aceitaPet", !filtros.aceitaPet)}>Aceita pet</button>
-              </div>
-            </div>
-          </>
-        )}
 
         <button type="button" className="filtros-clear" onClick={limpar}>Limpar</button>
       </div>

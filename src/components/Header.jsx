@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation }                  from "react-router-dom";
+import { Link, useLocation }                  from "react-router";
 import { FaHeadset, FaUserCircle, FaHeart }  from "react-icons/fa";
 import "../styles/Header.css";
 
@@ -93,7 +93,7 @@ export default function Header() {
                   <Link to="/forum" className="chat-op" onClick={() => setShowChat(false)}>
                     <span className="chat-op__icon">🏘️</span>
                     <div>
-                      <p className="chat-op__label">Fórum da comunidade</p>
+                      <p className="chat-op__label">Dúvidas sobre imóveis</p>
                       <p className="chat-op__sub">Perguntas e respostas</p>
                     </div>
                   </Link>

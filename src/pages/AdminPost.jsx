@@ -1,7 +1,8 @@
 // src/pages/AdminPosts.jsx
 import React, { useState, useEffect, useRef } from "react";
 import HeaderAdmin from "../components/HeaderAdmin";
-import api         from "../services/api";
+import Markdown from "../components/Markdown";
+import api, { mediaUrl }         from "../services/api";
 import {
   FaPlus, FaEdit, FaTrash, FaEye, FaEyeSlash,
   FaSave, FaTimes, FaImage, FaBold, FaItalic,
@@ -32,6 +33,7 @@ const FORM_VAZIO = {
 
 export default function AdminPosts() {
   const [secao,   setSecao]   = useState("blog");
+  const [revision, setRevision] = useState(0);
   const [posts,   setPosts]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [modo,    setModo]    = useState("lista");   // "lista" | "criar" | "editar"
@@ -46,22 +48,22 @@ export default function AdminPosts() {
 
   const cfg = SECAO_CONFIG[secao];
 
-  /* ── FETCH POSTS ── */
   useEffect(() => {
-    fetchPosts();
-  }, [secao]);
-
-  const fetchPosts = async () => {
+    const controller = new AbortController();
     setLoading(true);
-    try {
-      const res = await api.get(`/posts?secao=${secao}`);
-      setPosts(res.data || []);
-    } catch {
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setPosts([]);
+    api.get("/posts/admin", { params: { secao }, signal: controller.signal })
+      .then(({ data }) => setPosts(Array.isArray(data) ? data : []))
+      .catch(() => {
+        if (!controller.signal.aborted) setErro("Não foi possível carregar os posts.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [secao, revision]);
+
+  const atualizarPosts = () => setRevision((previous) => previous + 1);
 
   /* ── EDITOR: inserir markdown simplificado ── */
   const inserir = (antes, depois = "") => {
@@ -108,15 +110,14 @@ export default function AdminPosts() {
 
       if (editId) {
         await api.put(`/posts/${editId}`, payload, { headers: { "Content-Type": "multipart/form-data" } });
-        setSucesso("Post atualizado com sucesso!");
       } else {
         await api.post("/posts", payload, { headers: { "Content-Type": "multipart/form-data" } });
-        setSucesso("Post criado com sucesso!");
       }
 
-      await fetchPosts();
+      atualizarPosts();
       setModo("lista");
       resetForm();
+      setSucesso(editId ? "Post atualizado com sucesso!" : "Post criado com sucesso!");
     } catch (err) {
       setErro(err.response?.data?.erro || "Erro ao salvar. Tente novamente.");
     } finally {
@@ -142,9 +143,9 @@ export default function AdminPosts() {
       imagem_url:    post.imagem_url    || "",
       tempo_leitura: post.tempo_leitura || "",
       destaque:      post.destaque      || false,
-      publicado:     post.publicado !== false,
+      publicado:     Boolean(post.publicado),
     });
-    setPreview(post.imagem_url || "");
+    setPreview(mediaUrl(post.imagem_url));
     setEditId(post.id);
     setModo("editar");
     setErro("");
@@ -155,14 +156,14 @@ export default function AdminPosts() {
     if (!window.confirm("Excluir este post permanentemente?")) return;
     try {
       await api.delete(`/posts/${id}`);
-      fetchPosts();
+      atualizarPosts();
     } catch { alert("Erro ao excluir."); }
   };
 
   const togglePublicado = async (post) => {
     try {
-      await api.put(`/posts/${post.id}`, { ...post, publicado: !post.publicado, secao });
-      fetchPosts();
+      await api.patch(`/posts/${post.id}/status`, { publicado: !post.publicado });
+      atualizarPosts();
     } catch { alert("Erro ao atualizar status."); }
   };
 
@@ -235,7 +236,7 @@ export default function AdminPosts() {
                     {/* Thumb */}
                     <div className="ap-card__img">
                       {post.imagem_url ? (
-                        <img src={post.imagem_url} alt={post.titulo} />
+                        <img src={mediaUrl(post.imagem_url)} alt={post.titulo} />
                       ) : (
                         <div className="ap-card__img-empty"><FaImage /></div>
                       )}
@@ -351,9 +352,7 @@ export default function AdminPosts() {
                     <details className="ap-preview-details">
                       <summary>Pré-visualizar conteúdo</summary>
                       <div
-                        className="ap-preview-content"
-                        dangerouslySetInnerHTML={{ __html: renderMarkdown(form.conteudo) }}
-                      />
+                        className="ap-preview-content"><Markdown text={form.conteudo} /></div>
                     </details>
                   )}
                 </div>
@@ -445,7 +444,7 @@ export default function AdminPosts() {
                       value={form.imagem_url}
                       onChange={e => {
                         setForm(f => ({ ...f, imagem_url: e.target.value }));
-                        setPreview(e.target.value);
+                        setPreview(mediaUrl(e.target.value));
                         setImgFile(null);
                       }}
                     />
@@ -471,22 +470,4 @@ export default function AdminPosts() {
       </div>
     </div>
   );
-}
-
-/* ── MARKDOWN SIMPLES (sem lib externa) ── */
-function renderMarkdown(text) {
-  return text
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/^## (.+)$/gm,   "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm,    "<h1>$1</h1>")
-    .replace(/^### (.+)$/gm,  "<h3>$1</h3>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/_(.+?)_/g,       "<em>$1</em>")
-    .replace(/^> (.+)$/gm,     "<blockquote>$1</blockquote>")
-    .replace(/^- (.+)$/gm,     "<li>$1</li>")
-    .replace(/^[0-9]+\. (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/^(?!<[hbupli])/gm, "")
-    .replace(/(.+)/s, "<p>$1</p>");
 }

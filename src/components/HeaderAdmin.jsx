@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt, FaBuilding, FaClipboardList, FaHome, FaPen, FaNewspaper, FaFileAlt } from "react-icons/fa";
+import { Link, useLocation, useNavigate } from "react-router";
+import { FaUserCircle, FaBuilding, FaClipboardList, FaHome, FaFileAlt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import "../styles/Header.css";
 
@@ -24,8 +24,12 @@ export default function HeaderAdmin() {
   const isActive = (path) => (location.pathname === path ? "ativo" : "");
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+    } catch {
+      window.alert("A sessão local foi encerrada. Não foi possível confirmar a saída no servidor.");
+    }
+    navigate("/login", { replace: true });
   };
 
   const firstName = (user?.nome || "").split(" ")[0];

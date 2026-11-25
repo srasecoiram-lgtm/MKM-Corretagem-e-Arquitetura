@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { openWhatsApp, whatsappUrl } from "../services/contato";
 import Header   from "../components/Header";
 import Footer   from "../components/Footer";
 import {
@@ -43,31 +44,16 @@ const DIFERENCIAIS = [
 
 export default function Anuncie() {
   const [form, setForm]       = useState({ nome: "", email: "", telefone: "", cep: "", tipo: "" });
-  const [enviado, setEnviado] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [erro,    setErro]    = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErro("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErro("");
-
-    try {
-      /* Envia para o WhatsApp como fallback — backend pode ser adicionado depois */
-      const msg = `Olá! Quero anunciar meu imóvel na MKM.\n\nNome: ${form.nome}\nE-mail: ${form.email}\nTelefone: ${form.telefone}\nCEP: ${form.cep}\nTipo: ${form.tipo || "Não informado"}`;
-      window.open(`https://wa.me/5511992931055?text=${encodeURIComponent(msg)}`, "_blank");
-      setEnviado(true);
-      setForm({ nome: "", email: "", telefone: "", cep: "", tipo: "" });
-    } catch {
-      setErro("Erro ao enviar. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const msg = `Olá! Quero anunciar meu imóvel na MKM.\n\nNome: ${form.nome}\nE-mail: ${form.email}\nTelefone: ${form.telefone}\nCEP: ${form.cep}\nTipo: ${form.tipo || "Não informado"}`;
+    setWhatsapp(openWhatsApp(msg));
   };
 
   return (
@@ -136,7 +122,7 @@ export default function Anuncie() {
 
           {/* CTA WhatsApp secundário */}
           <a
-            href="https://wa.me/5511992931055"
+            href={whatsappUrl()}
             className="an-wa-btn"
             target="_blank"
             rel="noopener noreferrer"
@@ -150,23 +136,23 @@ export default function Anuncie() {
         <div className="an-form-card">
           <div className="an-form-card__head">
             <h2>Anuncie seu imóvel</h2>
-            <p>Preencha e entraremos em contato em até 24h</p>
+            <p>Prepare os dados e envie pelo WhatsApp.</p>
           </div>
 
-          {enviado ? (
+          {whatsapp ? (
             <div className="an-sucesso">
               <FaCheckCircle />
-              <h3>Solicitação enviada!</h3>
+              <h3>Mensagem preparada</h3>
               <p>
-                Recebemos seus dados e um corretor MKM entrará em contato em breve.
+                Revise e envie os dados na conversa com a MKM.
               </p>
-              <button className="an-novo-btn" onClick={() => setEnviado(false)}>
-                Enviar outro imóvel
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer">Reabrir WhatsApp</a>
+              <button className="an-novo-btn" onClick={() => setWhatsapp("")}>
+                Editar dados
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="an-form">
-              {erro && <div className="an-erro">{erro}</div>}
 
               <div className="an-field">
                 <label>Nome completo</label>
@@ -240,8 +226,8 @@ export default function Anuncie() {
                 </div>
               </div>
 
-              <button type="submit" className="an-submit" disabled={loading}>
-                {loading ? "Enviando…" : "Quero anunciar meu imóvel →"}
+              <button type="submit" className="an-submit">
+                Abrir no WhatsApp
               </button>
 
               <p className="an-disclaimer">

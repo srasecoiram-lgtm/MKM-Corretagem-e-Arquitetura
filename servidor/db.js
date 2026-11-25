@@ -1,17 +1,18 @@
-const mysql = require('mysql2');
-const dotenv = require('dotenv');
-dotenv.config();
+const mysql = require("mysql2/promise");
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+function createPool(env = process.env) {
+  return mysql.createPool({
+    host: env.DB_HOST || "127.0.0.1",
+    port: Number(env.DB_PORT || 3306),
+    user: env.DB_USER || "root",
+    password: env.DB_PASSWORD || "",
+    database: env.DB_NAME || "MKM",
+    charset: "utf8mb4",
+    dateStrings: ["DATE"],
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 50,
+  });
+}
 
-db.connect(err => {
-  if (err) throw err;
-  console.log('📦 Conectado ao MySQL!');
-});
-
-module.exports = db;
+module.exports = { createPool };

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { useNavigate }              from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate }              from "react-router";
 import { FaSearch }                 from "react-icons/fa";
 import FiltrosImovel                from "../pages/FiltrosImoveis";
 import "../styles/SearchBar.css";
@@ -17,7 +17,6 @@ export default function BannerBusca({ onBuscar }) {
   const [query, setQuery]         = useState("");
   const [filtros, setFiltros]     = useState({});
   const navigate                  = useNavigate();
-  const inputRef                  = useRef(null);
 
   const handleBuscar = (e) => {
     e.preventDefault();
@@ -25,8 +24,12 @@ export default function BannerBusca({ onBuscar }) {
       onBuscar({ query, modo, filtros });
     } else {
       const params = new URLSearchParams();
-      if (query) params.set("q", query);
-      if (modo  ) params.set("finalidade", modo === "comprar" ? "Venda" : "Aluguel");
+      if (query.trim()) params.set("q", query.trim());
+      params.set("finalidade", modo === "comprar" ? "Venda" : "Aluguel");
+      if (filtros.valorMin) params.set("precoMin", filtros.valorMin);
+      if (filtros.valorMax) params.set("precoMax", filtros.valorMax);
+      if (filtros.dormitorios?.length) params.set("quartos", filtros.dormitorios.join(","));
+      if (filtros.vagas?.length) params.set("vagas", filtros.vagas.join(","));
       navigate(`/imoveis?${params.toString()}`);
     }
   };
@@ -46,6 +49,7 @@ export default function BannerBusca({ onBuscar }) {
           <div className="filtro-abas">
             <button
               type="button"
+              aria-pressed={modo === "comprar"}
               className={`tab ${modo === "comprar" ? "ativo" : ""}`}
               onClick={() => setModo("comprar")}
             >
@@ -54,6 +58,7 @@ export default function BannerBusca({ onBuscar }) {
             <button
               type="button"
               className={`tab ${modo === "alugar" ? "ativo" : ""}`}
+              aria-pressed={modo === "alugar"}
               onClick={() => setModo("alugar")}
             >
               Alugar
@@ -65,7 +70,6 @@ export default function BannerBusca({ onBuscar }) {
             <div className="search-bar">
               <FaSearch className="search-icon" />
               <input
-                ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -86,9 +90,7 @@ export default function BannerBusca({ onBuscar }) {
             </div>
 
             <FiltrosImovel
-              modo={modo}
               mostrarMais={mostrarMais}
-              setMostrarMais={setMostrarMais}
               onFiltrar={setFiltros}
             />
           </form>

@@ -24,6 +24,8 @@ node_modules/
 .env.production
 .env.production.local
 .env.staging
+.env.*
+!.env.example
 
 # === BANCO DE DADOS (CRÍTICO - NUNCA EXPOR!) ===
 # Arquivos de configuração do banco

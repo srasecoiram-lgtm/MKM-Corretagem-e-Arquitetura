@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "react-router";
 import api          from "../services/api";
 import Header       from "../components/Header";
 import Footer       from "../components/Footer";
@@ -10,7 +11,6 @@ import {
   FaBuilding,
   FaTimes,
   FaSortAmountDown,
-  FaMapMarkerAlt,
 } from "react-icons/fa";
 import "../styles/ListarImoveis.css";
 
@@ -34,104 +34,74 @@ export default function ListarImoveis() {
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState(null);
 
-  const [tipo,        setTipo]        = useState("todos");
-  const [finalidade,  setFinalidade]  = useState("todos");
-  const [busca,       setBusca]       = useState("");
-  const [ordenar,     setOrdenar]     = useState("recente");
+  const [params, setParams] = useSearchParams();
+  const [ordenar, setOrdenar] = useState("recente");
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-  const [valorMin,    setValorMin]    = useState("");
-  const [valorMax,    setValorMax]    = useState("");
+  const [retry, setRetry] = useState(0);
+  const tipo = params.get("tipo") || "todos";
+  const finalidade = params.get("finalidade") || "todos";
+  const busca = params.get("q") || "";
+  const valorMin = params.get("precoMin") || "";
+  const valorMax = params.get("precoMax") || "";
+  const quartos = params.get("quartos") || "";
+  const vagas = params.get("vagas") || "";
 
-  const fetchImoveis = useCallback(async () => {
+  function updateFilter(key, value) {
+    const updated = new URLSearchParams(params);
+    if (value && value !== "todos") updated.set(key, value);
+    else updated.delete(key);
+    setParams(updated, { replace: true });
+  }
+
+  useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    try {
-      const { data } = await api.get("/imoveis", {
-        params: {
-          tipo,
-          finalidade: finalidade === "todos" ? undefined : finalidade,
-          q: busca || undefined,
-          metragemMin: valorMin || undefined,
-          metragemMax: valorMax || undefined,
-          precoMin: valorMin ? Number(valorMin) : undefined,
-          precoMax: valorMax ? Number(valorMax) : undefined,
-        },
-      });
-      setImoveis(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError("Não foi possível carregar os imóveis.");
-    } finally {
-      setLoading(false);
-    }
-  }, [tipo, finalidade, busca, valorMin, valorMax]);
-
-  useEffect(() => { fetchImoveis(); }, [fetchImoveis]);
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await api.get("/imoveis", {
+          signal: controller.signal,
+          params: {
+            tipo: tipo === "todos" ? undefined : tipo,
+            finalidade: finalidade === "todos" ? undefined : finalidade,
+            q: busca.trim() || undefined,
+            precoMin: valorMin || undefined,
+            precoMax: valorMax || undefined,
+            quartos: quartos || undefined,
+            vagas: vagas || undefined,
+          },
+        });
+        setImoveis(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setImoveis([]);
+        setError(error.response?.data?.erro || "Não foi possível carregar os imóveis.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }, 180);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [tipo, finalidade, busca, valorMin, valorMax, quartos, vagas, retry]);
 
   const filtrados = useMemo(() => {
-    let lista = [...imoveis];
+    const comparators = {
+      menor: (a, b) => Number(a.valor ?? Infinity) - Number(b.valor ?? Infinity),
+      maior: (a, b) => Number(b.valor ?? -1) - Number(a.valor ?? -1),
+      area: (a, b) => Number(b.area_total ?? -1) - Number(a.area_total ?? -1),
+    };
+    return comparators[ordenar] ? [...imoveis].sort(comparators[ordenar]) : imoveis;
+  }, [imoveis, ordenar]);
 
-    if (tipo !== "todos")
-      lista = lista.filter((i) => i.tipo_imovel === tipo);
-
-    if (finalidade !== "todos")
-      lista = lista.filter((i) =>
-        (i.finalidade || "").toLowerCase().includes(finalidade.toLowerCase())
-      );
-
-    if (busca.trim()) {
-      const q = busca.trim().toLowerCase();
-      lista = lista.filter((i) =>
-        [
-          i.edificio,
-          i.tipo_imovel,
-          i.bairro,
-          i.cidade,
-          i.logradouro,
-          i.descricao,
-        ].some((v) => (v || "").toLowerCase().includes(q))
-      );
-    }
-
-    if (valorMin)
-      lista = lista.filter((i) => parseFloat(i.valor || 0) >= parseFloat(valorMin));
-
-    if (valorMax)
-      lista = lista.filter((i) => parseFloat(i.valor || 0) <= parseFloat(valorMax));
-
-    switch (ordenar) {
-      case "menor":
-        lista.sort((a, b) => (a.valor || 0) - (b.valor || 0));
-        break;
-      case "maior":
-        lista.sort((a, b) => (b.valor || 0) - (a.valor || 0));
-        break;
-      case "area":
-        lista.sort((a, b) => (b.area_total || 0) - (a.area_total || 0));
-        break;
-      default:
-        lista.sort(
-          (a, b) => new Date(b.criado_em || 0) - new Date(a.criado_em || 0)
-        );
-    }
-
-    return lista;
-  }, [imoveis, tipo, finalidade, busca, valorMin, valorMax, ordenar]);
-
-  const limparFiltros = () => {
-    setTipo("todos");
-    setFinalidade("todos");
-    setBusca("");
+  function limparFiltros() {
+    setParams({}, { replace: true });
     setOrdenar("recente");
-    setValorMin("");
-    setValorMax("");
-  };
+  }
 
-  const temFiltroAtivo =
-    tipo !== "todos" ||
-    finalidade !== "todos" ||
-    busca.trim() ||
-    valorMin ||
-    valorMax;
+  const temFiltroAtivo = Boolean(tipo !== "todos" || finalidade !== "todos" || busca.trim() ||
+    valorMin || valorMax || quartos || vagas);
 
   return (
     <div className="li-page">
@@ -145,12 +115,13 @@ export default function ListarImoveis() {
             <FaSearch className="li-search__icon" />
             <input
               type="text"
+              aria-label="Buscar imóveis"
               placeholder="Busque por bairro, empreendimento ou cidade…"
               value={busca}
-              onChange={(e) => setBusca(e.target.value)}
+              onChange={(e) => updateFilter("q", e.target.value)}
             />
             {busca && (
-              <button className="li-search__clear" onClick={() => setBusca("")}>
+              <button type="button" aria-label="Limpar busca" className="li-search__clear" onClick={() => updateFilter("q", "")}>
                 <FaTimes />
               </button>
             )}
@@ -164,8 +135,9 @@ export default function ListarImoveis() {
             <button
               key={t.key}
               type="button"
+              aria-pressed={tipo === t.key}
               className={`li-tab ${tipo === t.key ? "li-tab--on" : ""}`}
-              onClick={() => setTipo(t.key)}
+              onClick={() => updateFilter("tipo", t.key)}
             >
               <span className="li-tab__icon">{t.icon}</span>
               <span className="li-tab__label">{t.label}</span>
@@ -179,8 +151,9 @@ export default function ListarImoveis() {
               <button
                 key={f}
                 type="button"
+                aria-pressed={finalidade === f}
                 className={`li-pill ${finalidade === f ? "li-pill--on" : ""}`}
-                onClick={() => setFinalidade(f)}
+                onClick={() => updateFilter("finalidade", f)}
               >
                 {f === "todos" ? "Todos" : f}
               </button>
@@ -189,7 +162,7 @@ export default function ListarImoveis() {
 
           <div className="li-select-wrap">
             <FaSortAmountDown />
-            <select value={ordenar} onChange={(e) => setOrdenar(e.target.value)}>
+            <select aria-label="Ordenar imóveis" value={ordenar} onChange={(e) => setOrdenar(e.target.value)}>
               {ORDENAR.map((o) => (
                 <option key={o.key} value={o.key}>
                   {o.label}
@@ -201,6 +174,7 @@ export default function ListarImoveis() {
           <button
             type="button"
             className={`li-btn-filter ${mostrarFiltros ? "li-btn-filter--on" : ""}`}
+            aria-expanded={mostrarFiltros}
             onClick={() => setMostrarFiltros((p) => !p)}
           >
             <FaFilter />
@@ -214,26 +188,28 @@ export default function ListarImoveis() {
         <div className="li-advanced">
           <div className="li-advanced__inner">
             <div className="li-advanced__grupo">
-              <label>Valor mínimo</label>
+              <label htmlFor="preco-min">Valor mínimo</label>
               <div className="li-advanced__input">
                 <span>R$</span>
                 <input
                   type="number"
+                  id="preco-min" min="0" step="0.01"
                   placeholder="0"
                   value={valorMin}
-                  onChange={(e) => setValorMin(e.target.value)}
+                  onChange={(e) => updateFilter("precoMin", e.target.value)}
                 />
               </div>
             </div>
             <div className="li-advanced__grupo">
-              <label>Valor máximo</label>
+              <label htmlFor="preco-max">Valor máximo</label>
               <div className="li-advanced__input">
                 <span>R$</span>
                 <input
                   type="number"
+                  id="preco-max" min="0" step="0.01"
                   placeholder="Sem limite"
                   value={valorMax}
-                  onChange={(e) => setValorMax(e.target.value)}
+                  onChange={(e) => updateFilter("precoMax", e.target.value)}
                 />
               </div>
             </div>
@@ -247,7 +223,7 @@ export default function ListarImoveis() {
       )}
 
       <div className="li-results-bar">
-        <span>
+        <span aria-live="polite">
           {loading
             ? "Carregando…"
             : `${filtrados.length} ${
@@ -270,8 +246,8 @@ export default function ListarImoveis() {
         ) : error ? (
           <div className="li-state li-state--error">
             <FaBuilding />
-            <p>{error}</p>
-            <button className="li-retry" onClick={fetchImoveis}>
+            <p role="alert">{error}</p>
+            <button className="li-retry" onClick={() => setRetry((count) => count + 1)}>
               Tentar novamente
             </button>
           </div>

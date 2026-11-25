@@ -4,9 +4,10 @@ import {
   FaWhatsapp, FaBed, FaBath, FaCar, FaHammer,
 } from "react-icons/fa";
 import "../styles/ImovelCard.css";
+import { openWhatsApp } from "../services/contato";
+import { mediaUrl } from "../services/api";
+import { toggleFavorito, useFavoritos } from "../services/favoritos";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3002";
-const WA_NUM  = process.env.REACT_APP_WHATSAPP || "5511992931055";
 
 const PLACEHOLDER =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=870&q=80";
@@ -23,7 +24,7 @@ const ESTAGIOS = {
 
 export default function CardImovel({ imovel }) {
   const [imgError, setImgError]   = useState(false);
-  const [favorito, setFavorito]   = useState(false);
+  const favorito = useFavoritos().includes(String(imovel.id));
 
   /* ── FORMATADORES ── */
   const fmtArea = () => {
@@ -54,21 +55,21 @@ export default function CardImovel({ imovel }) {
 
   /* ── IMAGE URL ── */
   const imgSrc =
-    !imgError && imovel.imagem ? `${API_URL}${imovel.imagem}` : PLACEHOLDER;
+    (!imgError && mediaUrl(imovel.imagem)) || PLACEHOLDER;
 
   /* ── WHATSAPP ── */
   const handleWhatsApp = (e) => {
     e.preventDefault();
     const nome = imovel.edificio || imovel.tipo_imovel || "imóvel";
     const msg  = `Olá! Tenho interesse no ${nome} — ${fmtEndereco()}`;
-    window.open(`https://wa.me/${WA_NUM}?text=${encodeURIComponent(msg)}`, "_blank");
+    openWhatsApp(msg);
   };
 
   /* ── FAVORITO ── */
   const toggleFav = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setFavorito((p) => !p);
+    toggleFavorito(imovel.id);
   };
 
   return (
@@ -85,6 +86,8 @@ export default function CardImovel({ imovel }) {
 
         <button
           className={`favorite-btn ${favorito ? "favorited" : ""}`}
+          type="button"
+          aria-pressed={favorito}
           onClick={toggleFav}
           aria-label={favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
         >

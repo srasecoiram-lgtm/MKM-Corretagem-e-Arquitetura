@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import api from "../services/api";
+import { useParams, Link } from "react-router";
+import { openWhatsApp } from "../services/contato";
+import api, { externalUrl, mediaUrl } from "../services/api";
 import Header from "../components/Header";
 import {
   FaMapMarkerAlt,
@@ -20,24 +21,27 @@ export default function DetalhesImovel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3002";
-  const WA_NUM = process.env.REACT_APP_WHATSAPP || "5511992931055";
 
   useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+    setImovel(null);
     const carregar = async () => {
       try {
-        const { data } = await api.get(`/imoveis/${id}`);
+        const { data } = await api.get(`/imoveis/${id}`, { signal: controller.signal });
         if (!data?.id) throw new Error("Não encontrado");
         setImovel(data);
       } catch (err) {
-        console.error("Erro ao buscar detalhes:", err);
+        if (controller.signal.aborted) return;
         setError("Imóvel não encontrado ou indisponível.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     carregar();
+    return () => controller.abort();
   }, [id]);
 
   const fmtPreco = () => {
@@ -68,10 +72,7 @@ export default function DetalhesImovel() {
   const abrirWhatsApp = () => {
     const nome = imovel.edificio || imovel.tipo_imovel || "imóvel";
     const msg = `Olá! Tenho interesse no ${nome} — ${fmtEndereco()}`;
-    window.open(
-      `https://wa.me/${WA_NUM}?text=${encodeURIComponent(msg)}`,
-      "_blank"
-    );
+    openWhatsApp(msg);
   };
 
   if (loading)
@@ -95,7 +96,8 @@ export default function DetalhesImovel() {
       </div>
     );
 
-  const imagemSrc = imovel.imagem ? `${API_URL}${imovel.imagem}` : null;
+  const imagemSrc = mediaUrl(imovel.imagem);
+  const mapUrl = externalUrl(imovel.link_maps);
 
   return (
     <div className="detalhes-container">
@@ -182,11 +184,11 @@ export default function DetalhesImovel() {
         </div>
       </div>
 
-      {imovel.link_maps && (
+      {mapUrl && (
         <div className="detalhes-maps">
           <h3>Localização</h3>
           <a
-            href={imovel.link_maps}
+            href={mapUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="detalhes-maps-link"

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { BrowserRouter as Router, Link, Routes, Route } from "react-router";
 
 /* ════════════════════════════════════════════════
    PÁGINAS PÚBLICAS  →  src/pages/
@@ -10,12 +10,10 @@ import ImovelDetalhe   from "./pages/ImovelDetalhe";
 import Sobre           from "./pages/Sobre";
 import Anuncie         from "./pages/Anuncie";
 import Contato         from "./pages/Contato";
-import FaleConosco     from "./pages/FaleConosco";
 import Favoritos       from "./pages/Favoritos";
 import Forum           from "./pages/Forum";
 import Blog            from "./pages/Blog";
 import Arquitetura     from "./pages/Arquitetura";
-import FiltrosImoveis  from "./pages/FiltrosImoveis";
 
 /* ════════════════════════════════════════════════
    PÁGINAS ADMIN  →  src/pages/
@@ -34,22 +32,23 @@ import EditarImovel    from "./pages/EditarImoveis";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute     from "./components/PrivateRoute";
 
+import { whatsappUrl } from "./services/contato";
 import whatsappIcon from "./assets/whatsapp.png";
 import "./styles/App.css";
 
 function App() {
   const [visible,     setVisible]     = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const fn = () => {
       const curr = window.scrollY;
-      setVisible(!(curr > lastScrollY && curr > 100));
-      setLastScrollY(curr);
+      setVisible(!(curr > lastScrollY.current && curr > 100));
+      lastScrollY.current = curr;
     };
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
-  }, [lastScrollY]);
+  }, []);
 
   return (
     <AuthProvider>
@@ -63,12 +62,13 @@ function App() {
           <Route path="/sobre"       element={<Sobre />} />
           <Route path="/anuncie"     element={<Anuncie />} />
           <Route path="/contato"     element={<Contato />} />
-          <Route path="/fale"        element={<FaleConosco />} />
+          <Route path="/fale"        element={<Contato />} />
           <Route path="/favoritos"   element={<Favoritos />} />
           <Route path="/forum"       element={<Forum />} />
           <Route path="/blog"        element={<Blog />} />
           <Route path="/blog/:id"    element={<Blog />} />
           <Route path="/arquitetura" element={<Arquitetura />} />
+          <Route path="/arquitetura/:id" element={<Arquitetura />} />
 
           {/* ── AUTH ── */}
           <Route path="/login" element={<Login />} />
@@ -87,11 +87,17 @@ function App() {
             <PrivateRoute><EditarImovel /></PrivateRoute>
           } />
 
+          <Route path="*" element={(
+            <main className="app-not-found">
+              <h1>Página não encontrada</h1>
+              <Link to="/">Voltar para a página inicial</Link>
+            </main>
+          )} />
         </Routes>
 
         {/* BOTÃO WHATSAPP FLUTUANTE */}
         <a
-          href="https://wa.me/5511992931055"
+          href={whatsappUrl()}
           className={`whatsapp-float ${visible ? "visible" : "hidden"}`}
           target="_blank"
           rel="noopener noreferrer"

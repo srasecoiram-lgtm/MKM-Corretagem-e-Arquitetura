@@ -49,3 +49,8 @@
   height: 100%;
   object-fit: contain;
 }
+.app-not-found {
+  min-height: 70vh;
+  padding: 8rem 1.5rem 2rem;
+  text-align: center;
+}
